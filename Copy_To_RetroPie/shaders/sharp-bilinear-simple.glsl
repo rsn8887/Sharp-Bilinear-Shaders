@@ -8,7 +8,8 @@
    that are scaled by non-integer factors.
    
    The prescale factor and texel coordinates are precalculated
-   in the vertex shader for speed.
+   in the vertex shader for speed. The precalculation only works on Windows 
+   but doesn't work on Raspberry Pi and is therefore disabled for now.
 */
 
 #if defined(VERTEX)
@@ -47,19 +48,24 @@ uniform COMPAT_PRECISION vec2 InputSize;
 #define SourceSize vec4(TextureSize, 1.0 / TextureSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
 
+/* uncomment for precalculation (not compatible with Raspberry Pi)
 out VertexData
 {
     vec2 texel;
     vec2 prescale;
 } precalcOut;
+*/
 
 void main()
 {
     gl_Position = MVPMatrix * VertexCoord;
     COL0 = COLOR;
     TEX0.xy = TexCoord.xy;
+
+/* uncomment for precalculation (not compatible with Raspberry Pi)
     precalcOut.texel = vTexCoord * SourceSize.xy;
     precalcOut.prescale = max(floor(outsize.xy / InputSize.xy), vec2(1.0, 1.0));
+*/
 }
 
 #elif defined(FRAGMENT)
@@ -100,27 +106,36 @@ COMPAT_VARYING vec4 TEX0;
 #define SourceSize vec4(TextureSize, 1.0 / TextureSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
 
+/* uncomment for precalculation (not compatible with Raspberry Pi)
 in VertexData
 {
     vec2 texel;
     vec2 prescale;
 } precalcIn;
-
+*/
 
 void main()
 {
-	vec2 texel_floored = floor(precalcIn.texel);
-    vec2 s = fract(precalcIn.texel);
-    vec2 region_range = 0.5 - 0.5 / precalcIn.prescale;
+/* uncomment for precalculation (not compatible with Raspberry Pi)
+   vec2 texel = precalcIn.texel;
+   vec2 scale = precalcIn.prescale;
+*/
+   // comment out next to lines for precalculation (not compatible with RPi)
+   vec2 texel = vTexCoord * SourceSize.xy;
+   vec2 scale = max(floor(outsize.xy / InputSize.xy), vec2(1.0, 1.0));
 
-    // Figure out where in the texel to sample to get correct pre-scaled bilinear.
-    // Uses the hardware bilinear interpolator to avoid having to sample 4 times manually.
+   vec2 texel_floored = floor(texel);
+   vec2 s = fract(texel);
+   vec2 region_range = 0.5 - 0.5 / scale;
 
-    vec2 center_dist = s - 0.5;
-    vec2 f = (center_dist - clamp(center_dist, -region_range, region_range)) * precalcIn.prescale + 0.5;
+   // Figure out where in the texel to sample to get correct pre-scaled bilinear.
+   // Uses the hardware bilinear interpolator to avoid having to sample 4 times manually.
 
-    vec2 mod_texel = texel_floored + f;
+   vec2 center_dist = s - 0.5;
+   vec2 f = (center_dist - clamp(center_dist, -region_range, region_range)) * scale + 0.5;
 
-    FragColor = vec4(texture(Source, mod_texel / SourceSize.xy).rgb, 1.0);
+   vec2 mod_texel = texel_floored + f;
+
+   FragColor = vec4(texture(Source, mod_texel / SourceSize.xy).rgb, 1.0);
 } 
 #endif
