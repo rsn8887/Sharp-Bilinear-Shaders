@@ -5,13 +5,13 @@ This is a collection of shaders for sharp pixels without pixel wobble and minima
 
 There are twp shaders included.
 
-- "2x-prescale-sharp-bilinear" does a fixed 2x integer prescale, resulting in a small amount of blur but no pixelwobble.
+- "2x-prescale-sharp-bilinear" 
 
-This is a simple two-pass shader configuration. First, an integer 2x prescale is applied, followed by a bilinear scaling to fullscreen. 
+This shader does a fixed 2x integer prescale resulting in a small amount of image blurring but no pixelwobble. This is a simple two-pass shader configuration. First, an integer 2x prescale is applied, followed by a bilinear scaling to fullscreen. 
 
-- "sharp-bilinear-simple" does a automatic integer prescale using the maximum integer depending on game resolution and screen resolution.
+- "sharp-bilinear-simple" 
 
-This is a bit more involved shader that results in even sharper images than the above.
+This shader does an automatic optimum integer prescale (2x, 3x, 4x etc.), depending on game and screen resolution. I recommend this shader since the autoscaling results in sharper images for some games than the fixed 2x prescale.
 
 Both shader configurations give sharp pixels with zero pixel wobble in all games. 
 
@@ -28,10 +28,10 @@ To install this shader in RetroPie:
 - set "Video Shader Enable" to "True"
 - set "Video Shader File" to "sharp-bilinear-simple.glslp," or "2x-prescale-sharp-bilinear.glslp" depending on your preference.
 
-Example Images 
--------------------
+Example Images
+--------------
 
-shader "sharp-bilinear-simple" on:
+shader "sharp-bilinear-simple.glslp" on:
 ![](https://image.ibb.co/hU4k95/with_shader.png)
 
 shader off, smoothing on (too much blur):
