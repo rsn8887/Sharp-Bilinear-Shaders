@@ -8,8 +8,7 @@
    that are scaled by non-integer factors.
    
    The prescale factor and texel coordinates are precalculated
-   in the vertex shader for speed. The precalculation only works on Windows 
-   but doesn't work on Raspberry Pi and is therefore disabled for now.
+   in the vertex shader for speed.
 */
 
 #if defined(VERTEX)
@@ -48,13 +47,8 @@ uniform COMPAT_PRECISION vec2 InputSize;
 #define SourceSize vec4(TextureSize, 1.0 / TextureSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
 
-/* uncomment for precalculation (not compatible with Raspberry Pi)
-out VertexData
-{
-    vec2 texel;
-    vec2 prescale;
-} precalcOut;
-*/
+COMPAT_VARYING vec2 precalc_texel;
+COMPAT_VARYING vec2 precalc_scale;
 
 void main()
 {
@@ -62,10 +56,8 @@ void main()
     COL0 = COLOR;
     TEX0.xy = TexCoord.xy;
 
-/* uncomment for precalculation (not compatible with Raspberry Pi)
-    precalcOut.texel = vTexCoord * SourceSize.xy;
-    precalcOut.prescale = max(floor(outsize.xy / InputSize.xy), vec2(1.0, 1.0));
-*/
+    precalc_texel = vTexCoord * SourceSize.xy;
+    precalc_scale = max(floor(outsize.xy / InputSize.xy), vec2(1.0, 1.0));
 }
 
 #elif defined(FRAGMENT)
@@ -106,23 +98,13 @@ COMPAT_VARYING vec4 TEX0;
 #define SourceSize vec4(TextureSize, 1.0 / TextureSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
 
-/* uncomment for precalculation (not compatible with Raspberry Pi)
-in VertexData
-{
-    vec2 texel;
-    vec2 prescale;
-} precalcIn;
-*/
+COMPAT_VARYING vec2 precalc_texel;
+COMPAT_VARYING vec2 precalc_scale;
 
 void main()
 {
-/* uncomment for precalculation (not compatible with Raspberry Pi)
-   vec2 texel = precalcIn.texel;
-   vec2 scale = precalcIn.prescale;
-*/
-   // comment out next to lines for precalculation (not compatible with RPi)
-   vec2 texel = vTexCoord * SourceSize.xy;
-   vec2 scale = max(floor(outsize.xy / InputSize.xy), vec2(1.0, 1.0));
+   vec2 texel = precalc_texel;
+   vec2 scale = precalc_scale;
 
    vec2 texel_floored = floor(texel);
    vec2 s = fract(texel);

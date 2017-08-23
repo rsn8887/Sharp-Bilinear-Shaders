@@ -64,7 +64,7 @@ The calculations done by these shaders are trivial. Using any of these shaders w
 Improvements compared to "retro/sharp-bilinear" from the Libretro repository
 ----------------------------------------------------------------------------
 - There's a small improvement that makes sharp-bilinear-simple work better with vertical games (shmups etc.). The autoscale is calculated separately for both the horizontal and vertical dimension, e.g. the integer prescale could be 4 for the horizontal, and 2 for the vertical. The original sharp-bilinear only used the vertical dimension to calculate the auto-prescale, and then used the same integer for both x and y.
-- There was originally another improvement in sharp-bilinear-simple. The autoscaling factors were originally pre-calculated in the vertex shader, instead of re-calculating for every pixel. However, that only worked on Windows but not on the Raspberry Pi (driver not supporting pipelining between shaders?), so I reverted that feature.
+- The autoscaling factors are pre-calculated in the vertex shader, instead of re-calculating for every pixel.
 - The sharp-bilinear-2x-prescale filter is very simple compared to all the others. It is a simple shader config that applies two passes of the stock.glsl "Null shader," and therefore contains almost no calculations, and should be extremely fast.
 
 
