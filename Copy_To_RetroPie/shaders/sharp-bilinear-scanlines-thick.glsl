@@ -12,6 +12,13 @@
    but doesn't work on Raspberry Pi and is therefore disabled for now.
 */
 
+// Parameter lines go here:
+#pragma parameter SCANLINE_BASE_BRIGHTNESS "Scanline Base Brightness" 0.60 0.0 1.0 0.01
+#pragma parameter SCANLINE_HORIZONTAL_MODULATION "Scanline Horizontal Modulation" 0.0 0.0 2.00 0.01
+#pragma parameter SCANLINE_VERTICAL_MODULATION "Scanline Vertical Modulation" 0.75 0.0 2.0 0.01
+
+#define pi 3.141592654
+
 #if defined(VERTEX)
 
 #if __VERSION__ >= 130
@@ -35,6 +42,7 @@ COMPAT_ATTRIBUTE vec4 COLOR;
 COMPAT_ATTRIBUTE vec4 TexCoord;
 COMPAT_VARYING vec4 COL0;
 COMPAT_VARYING vec4 TEX0;
+COMPAT_VARYING vec2 omega;
 
 uniform mat4 MVPMatrix;
 uniform int FrameDirection;
@@ -61,6 +69,7 @@ void main()
     gl_Position = MVPMatrix * VertexCoord;
     COL0 = COLOR;
     TEX0.xy = TexCoord.xy;
+    omega = vec2(pi * OutputSize.x, 2.0 * pi * TextureSize.y);
 
 /* uncomment for precalculation (not compatible with Raspberry Pi)
     precalcOut.texel = vTexCoord * SourceSize.xy;
@@ -98,6 +107,7 @@ uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
 uniform sampler2D Texture;
 COMPAT_VARYING vec4 TEX0;
+COMPAT_VARYING vec2 omega;
 
 // fragment compatibility #defines
 #define Source Texture
@@ -105,6 +115,17 @@ COMPAT_VARYING vec4 TEX0;
 #define texture(c, d) COMPAT_TEXTURE(c, d)
 #define SourceSize vec4(TextureSize, 1.0 / TextureSize) //either TextureSize or InputSize
 #define outsize vec4(OutputSize, 1.0 / OutputSize)
+
+#ifdef PARAMETER_UNIFORM
+// All parameter floats need to have COMPAT_PRECISION in front of them
+uniform COMPAT_PRECISION float SCANLINE_BASE_BRIGHTNESS;
+uniform COMPAT_PRECISION float SCANLINE_HORIZONTAL_MODULATION;
+uniform COMPAT_PRECISION float SCANLINE_VERTICAL_MODULATION;
+#else
+#define SCANLINE_BASE_BRIGHTNESS 0.60
+#define SCANLINE_HORIZONTAL_MODULATION 0.0
+#define SCANLINE_VERTICAL_MODULATION 0.75
+#endif
 
 /* uncomment for precalculation (not compatible with Raspberry Pi)
 in VertexData
@@ -136,10 +157,12 @@ void main()
 
    vec2 mod_texel = texel_floored + f;
 
-   // thick scanlines based on source resolution
-   if (mod(floor(vTexCoord.y * 2.0 * InputSize.y), 2.0) == 0.0)
-      FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-   else
-      FragColor = vec4(texture(Source, mod_texel / SourceSize.xy).rgb, 1.0);
+   vec3 res = texture(Source, mod_texel / SourceSize.xy).xyz;
+
+   // thick scanlines (thickness pre-calculated in vertex shader based on source resolution)
+   vec2 sine_comp = vec2(SCANLINE_HORIZONTAL_MODULATION, SCANLINE_VERTICAL_MODULATION);
+
+   vec3 scanline = res * (SCANLINE_BASE_BRIGHTNESS + dot(sine_comp * sin(vTexCoord * omega), vec2(1.0, 1.0)));
+   FragColor = vec4(scanline.rgb, 1.0);
 } 
 #endif

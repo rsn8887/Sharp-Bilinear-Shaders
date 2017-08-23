@@ -1,7 +1,7 @@
 Sharp-Bilinear Shaders for Retroarch
 =================================
 
-This is a collection of shaders for sharp pixels without pixel wobble and minimal blurring in RetroArch/Libretro.
+This is a collection of shaders for sharp pixels without pixel wobble and minimal blurring in RetroArch/Libretro, based on TheMaister's work.
 
 There are four shaders included.
 
@@ -26,7 +26,6 @@ All these shader configurations give sharp pixels with zero pixel wobble in all 
 
 Compared to the "video smoothing=ON" setting with no shaders, pixels are less blurry. Compared to the "video smoothing=OFF" setting with no shaders, the pixels do not change shape/wobble as they move across the screen.
 
-I tried TheMaister's autoscaling shader from the libretro repo, "retro/sharp-bilinear.glslp," but, for some reason, that shader did not work well with vertical games for me.
 
 Installation
 ---------------
@@ -55,4 +54,17 @@ On first glance, the above looks sharp and good, but looking at a detail, we can
 Compare the above detail to the result with the shader on:
 ![](https://image.ibb.co/hrRXp5/with_shader_detail.png)
 
-Now all pixels have the same shape, at the cost of a slight reduction in sharpness. 
+Now all pixels have the same shape, at the cost of a slight reduction in sharpness.
+
+Performance
+-----------
+
+The calculations done by these shaders are trivial. Using any of these shaders with RetroPie on a Raspberry Pi 3 in 1080p full HD resolution, Street Fighter 3 Third Strike (libretro-fba) runs at a steady 60 fps.
+
+Improvements compared to "retro/sharp-bilinear" from the Libretro repository
+----------------------------------------------------------------------------
+- There's a small improvement that makes sharp-bilinear-simple work better with vertical games (shmups etc.). The autoscale is calculated separately for both the horizontal and vertical dimension, e.g. the integer prescale could be 4 for the horizontal, and 2 for the vertical. The original sharp-bilinear only used the vertical dimension to calculate the auto-prescale, and then used the same integer for both x and y.
+- There was originally another improvement in sharp-bilinear-simple. The autoscaling factors were originally pre-calculated in the vertex shader, instead of re-calculating for every pixel. However, that only worked on Windows but not on the Raspberry Pi (driver not supporting pipelining between shaders?), so I reverted that feature.
+- The sharp-bilinear-2x-prescale filter is very simple compared to all the others. It is a simple shader config that applies two passes of the stock.glsl "Null shader," and therefore contains almost no calculations, and should be extremely fast.
+
+
