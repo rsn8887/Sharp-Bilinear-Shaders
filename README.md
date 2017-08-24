@@ -13,13 +13,9 @@ This shader does a fixed 2x integer prescale resulting in a small amount of imag
 
 This shader does an automatic optimum integer prescale (2x, 3x, 4x etc.), depending on game and screen resolution. I recommend this shader since the autoscaling results in sharper images for some games than the fixed 2x prescale.
 
-- "sharp-bilinear-scanlines-thin" 
+- "sharp-bilinear-scanlines" 
 
-same as above, but with an overlay of thin black scanlines (scanline on every even display line)
-
-- "sharp-bilinear-scanlines-thick" 
-
-same as above, but with an overlay of thick black scanlines (half of each game pixel, vertically is a scanline)
+same as above, but with an overlay of black scanlines (half of each game pixel, vertically is a scanline)
 
 
 All these shader configurations give sharp pixels with zero pixel wobble in all games. 
