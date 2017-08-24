@@ -3,7 +3,7 @@ Sharp-Bilinear Shaders for Retroarch
 
 This is a collection of shaders for sharp pixels without pixel wobble and minimal blurring in RetroArch/Libretro, based on TheMaister's work.
 
-There are four shaders included.
+The following shaders are included:
 
 - "sharp-bilinear-2x-prescale" 
 
